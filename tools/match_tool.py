@@ -25,7 +25,7 @@ class DotaMatchTool(FunctionTool[AstrAgentContext]):
     client: object = Field(default=None, exclude=True)
 
     async def call(self, context: ContextWrapper[AstrAgentContext], **kwargs) -> ToolExecResult:
-        from core.formatter import format_match_detail
+        from core.templates import render_match_detail
 
         match_id = kwargs.get("match_id")
         if not match_id:
@@ -41,7 +41,6 @@ class DotaMatchTool(FunctionTool[AstrAgentContext]):
             if not match:
                 return f"获取比赛 #{match_id} 的数据失败，比赛可能不存在或数据尚未解析。"
 
-            result = format_match_detail(match)
-            return f"以下是该场比赛的 Dota2 数据，请据此给用户生成简洁总结：\n\n{result}"
+            return render_match_detail(match)
         except Exception as exc:
             return f"查询比赛失败：{exc}"

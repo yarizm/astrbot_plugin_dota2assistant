@@ -26,7 +26,7 @@ class DotaHeroTool(FunctionTool[AstrAgentContext]):
     hero_map: object = Field(default=None, exclude=True)
 
     async def call(self, context: ContextWrapper[AstrAgentContext], **kwargs) -> ToolExecResult:
-        from core.formatter import format_hero_info
+        from core.templates import render_hero_info
 
         hero_name = str(kwargs.get("hero_name") or "").strip().lower()
         if not hero_name:
@@ -67,8 +67,7 @@ class DotaHeroTool(FunctionTool[AstrAgentContext]):
             if not hero:
                 return f"找不到名为 '{hero_name}' 的英雄。"
 
-            result = format_hero_info(hero)
-            return f"以下是该英雄的 Dota2 数据，请据此给用户生成简洁总结：\n\n{result}"
+            return render_hero_info(hero)
         except Exception as exc:
             return f"查询英雄失败：{exc}"
 
@@ -100,7 +99,7 @@ class DotaHeroListTool(FunctionTool[AstrAgentContext]):
     client: object = Field(default=None, exclude=True)
 
     async def call(self, context: ContextWrapper[AstrAgentContext], **kwargs) -> ToolExecResult:
-        from core.formatter import format_hero_list
+        from core.templates import render_hero_list
 
         attribute = str(kwargs.get("attribute") or "").strip()
         role = str(kwargs.get("role") or "").strip()
@@ -110,7 +109,6 @@ class DotaHeroListTool(FunctionTool[AstrAgentContext]):
             if not heroes:
                 return "获取英雄数据失败。"
 
-            result = format_hero_list(heroes, filter_attr=attribute, filter_role=role)
-            return f"以下是 Dota2 英雄列表数据，请据此给用户生成简洁总结：\n\n{result}"
+            return render_hero_list(heroes, filter_attr=attribute, filter_role=role)
         except Exception as exc:
             return f"查询英雄列表失败：{exc}"

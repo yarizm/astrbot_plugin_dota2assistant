@@ -26,6 +26,8 @@ class DotaHeroBuildTool(FunctionTool[AstrAgentContext]):
     hero_map: object = Field(default=None, exclude=True)
 
     async def call(self, context: ContextWrapper[AstrAgentContext], **kwargs) -> ToolExecResult:
+        from core.templates import render_hero_build
+
         hero_name = str(kwargs.get("hero_name") or "").strip().lower()
         if not hero_name:
             return "请提供英雄名称。"
@@ -78,32 +80,6 @@ class DotaHeroBuildTool(FunctionTool[AstrAgentContext]):
                     if item_id:
                         id_map[item_id] = dname
 
-            # Format output
-            result = self._format_build(hero.localized_name, build_data, id_map)
-            return f"以下是 {hero.localized_name} 的出装推荐数据，请据此给用户生成简洁总结：\n\n{result}"
+            return render_hero_build(hero.localized_name, build_data, id_map)
         except Exception as exc:
             return f"查询英雄出装失败：{exc}"
-
-    @staticmethod
-    def _format_build(hero_name: str, build_data: dict, id_map: dict) -> str:
-        phase_names = {
-            "start_game_items": "出门装",
-            "early_game_items": "前期",
-            "mid_game_items": "中期",
-            "late_game_items": "后期",
-        }
-        lines = [f"# {hero_name} 出装推荐", ""]
-
-        for phase_key, phase_label in phase_names.items():
-            items = build_data.get(phase_key)
-            if not items:
-                continue
-            lines.append(f"## {phase_label}")
-            sorted_items = sorted(items.items(), key=lambda x: int(x[1]), reverse=True)[:5]
-            for item_id, count in sorted_items:
-                item_id = int(item_id)
-                name = id_map.get(item_id, f"Item#{item_id}")
-                lines.append(f"- {name}: {count}%")
-            lines.append("")
-
-        return "\n".join(lines)

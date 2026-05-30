@@ -22,7 +22,7 @@ class DotaMyProfileTool(FunctionTool[AstrAgentContext]):
     store: object = Field(default=None, exclude=True)
 
     async def call(self, context: ContextWrapper[AstrAgentContext], **kwargs) -> ToolExecResult:
-        from core.formatter import format_player_profile
+        from core.templates import fmt_avg_kda, fmt_rank, render_player_profile
 
         event = context.context.event
         sender_id = event.get_sender_id()
@@ -40,7 +40,9 @@ class DotaMyProfileTool(FunctionTool[AstrAgentContext]):
                 return f"获取绑定账号 #{account_id} 的资料失败，请检查绑定的 ID 是否正确。"
 
             recent = await self.client.get_player_recent_matches(account_id, limit=10)
-            result = format_player_profile(profile, recent)
-            return f"以下是你的 Dota2 数据，请据此给用户生成简洁总结：\n\n{result}"
+
+            rank_str = fmt_rank(profile.rank_tier, profile.leaderboard_rank)
+            avg_kda = fmt_avg_kda(recent)
+            return render_player_profile(profile, recent, rank_str, avg_kda)
         except Exception as exc:
             return f"查询失败：{exc}"

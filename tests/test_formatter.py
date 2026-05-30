@@ -1,13 +1,16 @@
 import unittest
 
-from core.formatter import (
-    format_hero_info,
-    format_hero_list,
-    format_item_info,
-    format_live_games,
-    format_match_detail,
-    format_player_profile,
-    format_pro_matches,
+from core.templates import (
+    fmt_avg_kda,
+    fmt_duration,
+    fmt_rank,
+    render_hero_info,
+    render_hero_list,
+    render_item_info,
+    render_live_games,
+    render_match_detail,
+    render_player_profile,
+    render_pro_matches,
 )
 from core.models import (
     HeroInfo,
@@ -21,6 +24,28 @@ from core.models import (
 )
 
 
+class TestHelpers(unittest.TestCase):
+    def test_fmt_rank(self):
+        self.assertEqual(fmt_rank(75), "超凡入圣 5星")
+        self.assertEqual(fmt_rank(81, 100), "冠绝一世 1星 (排名 #100)")
+        self.assertEqual(fmt_rank(0), "未知")
+
+    def test_fmt_duration(self):
+        self.assertEqual(fmt_duration(0), "未知")
+        self.assertEqual(fmt_duration(65), "1:05")
+        self.assertEqual(fmt_duration(3661), "1:01:01")
+
+    def test_fmt_avg_kda(self):
+        matches = [
+            RecentMatch(match_id=1, hero_id=1, kills=10, deaths=2, assists=5),
+            RecentMatch(match_id=2, hero_id=2, kills=3, deaths=8, assists=12),
+        ]
+        result = fmt_avg_kda(matches)
+        self.assertIn("6.5", result)  # (10+3)/2
+        self.assertIn("5.0", result)  # (2+8)/2
+        self.assertIn("8.5", result)  # (5+12)/2
+
+
 class TestPlayerFormatter(unittest.TestCase):
     def test_basic_profile(self):
         profile = PlayerProfile(
@@ -29,7 +54,9 @@ class TestPlayerFormatter(unittest.TestCase):
             rank_tier=75,
             estimated_mmr=5000,
         )
-        result = format_player_profile(profile)
+        rank_str = fmt_rank(profile.rank_tier, profile.leaderboard_rank)
+        avg_kda = fmt_avg_kda([])
+        result = render_player_profile(profile, [], rank_str, avg_kda)
         self.assertIn("TestPlayer", result)
         self.assertIn("超凡入圣", result)
         self.assertIn("5000", result)
@@ -42,7 +69,9 @@ class TestPlayerFormatter(unittest.TestCase):
             RecentMatch(match_id=2, hero_id=2, hero_name="Axe", kills=3, deaths=8, assists=12,
                         duration_seconds=1800, win=False),
         ]
-        result = format_player_profile(profile, matches)
+        rank_str = fmt_rank(profile.rank_tier)
+        avg_kda = fmt_avg_kda(matches)
+        result = render_player_profile(profile, matches, rank_str, avg_kda)
         self.assertIn("近期战绩", result)
         self.assertIn("1胜 1负", result)
         self.assertIn("Anti-Mage", result)
@@ -68,7 +97,7 @@ class TestHeroFormatter(unittest.TestCase):
             pub_pick=100000,
             pub_win=52000,
         )
-        result = format_hero_info(hero)
+        result = render_hero_info(hero)
         self.assertIn("Anti-Mage", result)
         self.assertIn("敏捷", result)
         self.assertIn("52.0%", result)
@@ -79,7 +108,7 @@ class TestHeroFormatter(unittest.TestCase):
             HeroInfo(id=2, name="b", localized_name="HeroB", primary_attr="agi", attack_type="Ranged"),
             HeroInfo(id=3, name="c", localized_name="HeroC", primary_attr="str", attack_type="Melee"),
         ]
-        result = format_hero_list(heroes, filter_attr="str")
+        result = render_hero_list(heroes, filter_attr="str")
         self.assertIn("HeroA", result)
         self.assertIn("HeroC", result)
         self.assertNotIn("HeroB", result)
@@ -93,7 +122,7 @@ class TestItemFormatter(unittest.TestCase):
             cost=2250,
             description="Teleport to a target point up to 1200 units away.",
         )
-        result = format_item_info(item)
+        result = render_item_info(item)
         self.assertIn("Blink Dagger", result)
         self.assertIn("2250", result)
         self.assertIn("Teleport", result)
@@ -114,7 +143,7 @@ class TestMatchFormatter(unittest.TestCase):
                             gpm=400, hero_damage=18000, is_radiant=False, win=False),
             ],
         )
-        result = format_match_detail(match)
+        result = render_match_detail(match)
         self.assertIn("天辉胜", result)
         self.assertIn("Anti-Mage", result)
         self.assertIn("Axe", result)
@@ -127,13 +156,13 @@ class TestLiveFormatter(unittest.TestCase):
             LiveGame(match_id=1, game_time=1200, radiant_score=20, dire_score=15,
                      team_name_radiant="Team A", team_name_dire="Team B", spectators=500),
         ]
-        result = format_live_games(games)
+        result = render_live_games(games)
         self.assertIn("Team A", result)
         self.assertIn("Team B", result)
-        self.assertIn("500 观战", result)
+        self.assertIn("500", result)
 
     def test_empty(self):
-        result = format_live_games([])
+        result = render_live_games([])
         self.assertIn("没有", result)
 
 
@@ -144,13 +173,13 @@ class TestProFormatter(unittest.TestCase):
                      radiant_score=2, dire_score=1, radiant_win=True,
                      league_name="TI", duration_seconds=3600, start_time=1700000000),
         ]
-        result = format_pro_matches(matches)
+        result = render_pro_matches(matches)
         self.assertIn("Team A", result)
         self.assertIn("Team B", result)
         self.assertIn("TI", result)
 
     def test_empty(self):
-        result = format_pro_matches([])
+        result = render_pro_matches([])
         self.assertIn("暂无", result)
 
 

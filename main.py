@@ -94,7 +94,7 @@ class Dota2AssistantPlugin(Star):
 
         yield event.plain_result(f"正在查询玩家 [{player_name}] ...")
         try:
-            from core.formatter import format_player_profile
+            from core.templates import fmt_avg_kda, fmt_rank, render_player_profile
 
             profiles = await self.client.search_players(player_name)
             if not profiles:
@@ -107,7 +107,9 @@ class Dota2AssistantPlugin(Star):
                 profile = full_profile
 
             recent = await self.client.get_player_recent_matches(profile.account_id, limit=10)
-            yield event.plain_result(format_player_profile(profile, recent))
+            rank_str = fmt_rank(profile.rank_tier, profile.leaderboard_rank)
+            avg_kda = fmt_avg_kda(recent)
+            yield event.plain_result(render_player_profile(profile, recent, rank_str, avg_kda))
         except Exception as exc:
             logger.error(f"Dota2 玩家查询失败: {exc}")
             yield event.plain_result("查询失败：Dota2 服务暂时不可用，请稍后再试。")
@@ -125,7 +127,7 @@ class Dota2AssistantPlugin(Star):
 
         yield event.plain_result(f"正在查询英雄 [{hero_name}] ...")
         try:
-            from core.formatter import format_hero_info
+            from core.templates import render_hero_info
 
             heroes = await self.client.get_heroes()
             hero = None
@@ -157,7 +159,7 @@ class Dota2AssistantPlugin(Star):
                 yield event.plain_result(f"找不到名为 '{hero_name}' 的英雄。")
                 return
 
-            yield event.plain_result(format_hero_info(hero))
+            yield event.plain_result(render_hero_info(hero))
         except Exception as exc:
             logger.error(f"Dota2 英雄查询失败: {exc}")
             yield event.plain_result("查询失败：Dota2 服务暂时不可用，请稍后再试。")
@@ -176,14 +178,14 @@ class Dota2AssistantPlugin(Star):
         match_id = int(match_id_str)
         yield event.plain_result(f"正在查询比赛 #{match_id} ...")
         try:
-            from core.formatter import format_match_detail
+            from core.templates import render_match_detail
 
             match = await self.client.get_match_detail(match_id)
             if not match:
                 yield event.plain_result(f"获取比赛 #{match_id} 失败，比赛可能不存在。")
                 return
 
-            yield event.plain_result(format_match_detail(match))
+            yield event.plain_result(render_match_detail(match))
         except Exception as exc:
             logger.error(f"Dota2 比赛查询失败: {exc}")
             yield event.plain_result("查询失败：Dota2 服务暂时不可用，请稍后再试。")
@@ -196,10 +198,10 @@ class Dota2AssistantPlugin(Star):
 
         yield event.plain_result("正在查询实时比赛 ...")
         try:
-            from core.formatter import format_live_games
+            from core.templates import render_live_games
 
             games = await self.client.get_live_games()
-            yield event.plain_result(format_live_games(games))
+            yield event.plain_result(render_live_games(games))
         except Exception as exc:
             logger.error(f"Dota2 实时比赛查询失败: {exc}")
             yield event.plain_result("查询失败：Dota2 服务暂时不可用，请稍后再试。")
@@ -212,10 +214,10 @@ class Dota2AssistantPlugin(Star):
 
         yield event.plain_result("正在查询职业比赛 ...")
         try:
-            from core.formatter import format_pro_matches
+            from core.templates import render_pro_matches
 
             matches = await self.client.get_pro_matches(limit=10)
-            yield event.plain_result(format_pro_matches(matches))
+            yield event.plain_result(render_pro_matches(matches))
         except Exception as exc:
             logger.error(f"Dota2 职业比赛查询失败: {exc}")
             yield event.plain_result("查询失败：Dota2 服务暂时不可用，请稍后再试。")

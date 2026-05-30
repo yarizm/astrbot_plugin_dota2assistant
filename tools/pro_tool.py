@@ -25,7 +25,7 @@ class DotaProTool(FunctionTool[AstrAgentContext]):
     client: object = Field(default=None, exclude=True)
 
     async def call(self, context: ContextWrapper[AstrAgentContext], **kwargs) -> ToolExecResult:
-        from core.formatter import format_pro_matches
+        from core.templates import render_pro_matches
 
         limit = kwargs.get("limit", 10)
         try:
@@ -35,7 +35,6 @@ class DotaProTool(FunctionTool[AstrAgentContext]):
 
         try:
             matches = await self.client.get_pro_matches(limit=limit)
-            result = format_pro_matches(matches)
-            return f"以下是近期 Dota2 职业比赛数据，请据此给用户生成简洁总结：\n\n{result}"
+            return render_pro_matches(matches)
         except Exception as exc:
             return f"查询职业比赛失败：{exc}"

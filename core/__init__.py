@@ -1,12 +1,3 @@
-from core.formatter import (
-    format_hero_info as format_hero_info,
-    format_hero_list as format_hero_list,
-    format_item_info as format_item_info,
-    format_live_games as format_live_games,
-    format_match_detail as format_match_detail,
-    format_player_profile as format_player_profile,
-    format_pro_matches as format_pro_matches,
-)
 from core.models import (
     HeroInfo as HeroInfo,
     ItemInfo as ItemInfo,
@@ -18,3 +9,12 @@ from core.models import (
     RecentMatch as RecentMatch,
 )
 from core.opendota import OpenDotaClient as OpenDotaClient
+from core.templates import (
+    render_hero_info as render_hero_info,
+    render_hero_list as render_hero_list,
+    render_item_info as render_item_info,
+    render_live_games as render_live_games,
+    render_match_detail as render_match_detail,
+    render_player_profile as render_player_profile,
+    render_pro_matches as render_pro_matches,
+)

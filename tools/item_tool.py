@@ -26,7 +26,7 @@ class DotaItemTool(FunctionTool[AstrAgentContext]):
     item_name_map: object = Field(default=None, exclude=True)
 
     async def call(self, context: ContextWrapper[AstrAgentContext], **kwargs) -> ToolExecResult:
-        from core.formatter import format_item_info
+        from core.templates import render_item_info
 
         item_name = str(kwargs.get("item_name") or "").strip().lower()
         if not item_name:
@@ -67,7 +67,6 @@ class DotaItemTool(FunctionTool[AstrAgentContext]):
             if not item:
                 return f"找不到名为 '{item_name}' 的物品。"
 
-            result = format_item_info(item)
-            return f"以下是该物品的 Dota2 数据，请据此给用户生成简洁总结：\n\n{result}"
+            return render_item_info(item)
         except Exception as exc:
             return f"查询物品失败：{exc}"

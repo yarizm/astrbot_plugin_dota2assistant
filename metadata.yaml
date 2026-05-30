@@ -16,3 +16,5 @@ support_platforms:
   - satori
   - webchat
 astrbot_version: ">=4.16,<5"
+requirements:
+  - aiohttp

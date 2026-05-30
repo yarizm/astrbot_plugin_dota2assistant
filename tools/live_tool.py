@@ -20,11 +20,10 @@ class DotaLiveTool(FunctionTool[AstrAgentContext]):
     client: object = Field(default=None, exclude=True)
 
     async def call(self, context: ContextWrapper[AstrAgentContext], **kwargs) -> ToolExecResult:
-        from core.formatter import format_live_games
+        from core.templates import render_live_games
 
         try:
             games = await self.client.get_live_games()
-            result = format_live_games(games)
-            return f"以下是当前 Dota2 实时比赛数据，请据此给用户生成简洁总结：\n\n{result}"
+            return render_live_games(games)
         except Exception as exc:
             return f"查询实时比赛失败：{exc}"
