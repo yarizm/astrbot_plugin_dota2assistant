@@ -1,13 +1,19 @@
 from __future__ import annotations
 
 import json
+import shutil
 import sys
 from pathlib import Path
 
 # 确保插件目录在 sys.path 中（AstrBot 运行时加载插件需要）
-_plugin_dir = str(Path(__file__).parent)
-if _plugin_dir not in sys.path:
-    sys.path.insert(0, _plugin_dir)
+_plugin_dir = Path(__file__).parent
+if str(_plugin_dir) not in sys.path:
+    sys.path.insert(0, str(_plugin_dir))
+
+# 自动清除 Python 缓存，确保加载最新代码
+for _pycache in _plugin_dir.rglob("__pycache__"):
+    if _pycache.is_dir():
+        shutil.rmtree(_pycache, ignore_errors=True)
 
 from compat import AstrMessageEvent, Context, Star, filter, logger  # noqa: E402
 from core.opendota import OpenDotaClient  # noqa: E402
