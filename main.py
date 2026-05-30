@@ -228,8 +228,10 @@ class Dota2AssistantPlugin(Star):
             yield event.plain_result("无法获取用户身份信息。")
             return
 
-        steam_id_str = event.message_str.strip()
-        if not steam_id_str:
+        # 从消息中提取数字（兼容各种格式）
+        import re
+        numbers = re.findall(r"\d+", event.message_str.strip())
+        if not numbers:
             yield event.plain_result(
                 "请提供 Steam ID，支持两种格式：\n"
                 "- Steam ID 32-bit（数字），例如：/dota bind 899428504\n"
@@ -237,9 +239,7 @@ class Dota2AssistantPlugin(Star):
             )
             return
 
-        if not steam_id_str.isdigit():
-            yield event.plain_result("Steam ID 必须是纯数字。")
-            return
+        steam_id_str = numbers[0]
 
         account_id = int(steam_id_str)
         # Steam ID 64-bit 转 32-bit
