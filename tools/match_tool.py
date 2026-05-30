@@ -9,6 +9,10 @@ class DotaMatchTool(FunctionTool[AstrAgentContext]):
     description: str = (
         "查询 Dota2 比赛详情，包括双方阵容、KDA、经济、伤害等数据。"
         "当用户想了解某场比赛时调用，例如比赛分析、对局回顾。"
+        "返回数据后，请根据以下要点为用户生成简洁分析：\n"
+        "1. 分析比赛胜负关键（哪方经济领先、关键团战等）\n"
+        "2. 指出表现突出的玩家（MVP 候选）\n"
+        "3. 如果用户指定了玩家，重点分析该玩家的表现"
     )
     parameters: dict = Field(
         default_factory=lambda: {

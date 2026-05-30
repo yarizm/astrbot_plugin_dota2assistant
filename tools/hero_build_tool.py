@@ -9,6 +9,10 @@ class DotaHeroBuildTool(FunctionTool[AstrAgentContext]):
     description: str = (
         "查询 Dota2 英雄的出装推荐，包括出门装、前中后期装备。"
         "当用户想了解某个英雄怎么出装、出装推荐、装备路线时调用。"
+        "返回数据后，请根据以下要点为用户生成简洁分析：\n"
+        "1. 按阶段（出门装→前中后期）简要说明出装思路\n"
+        "2. 指出核心装备和可选装备\n"
+        "3. 如果有 situational 装备，说明适用场景"
     )
     parameters: dict = Field(
         default_factory=lambda: {

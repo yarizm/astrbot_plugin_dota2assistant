@@ -9,6 +9,10 @@ class DotaPlayerTool(FunctionTool[AstrAgentContext]):
     description: str = (
         "查询 Dota2 玩家资料、段位、MMR 和近期战绩。"
         "当用户想了解某个 Dota2 玩家时调用，例如查询战绩、段位、最近表现。"
+        "返回数据后，请根据以下要点为用户生成简洁分析：\n"
+        "1. 根据胜率和 KDA 评价玩家近期状态（上升/稳定/下滑）\n"
+        "2. 指出表现突出或需改进的方面\n"
+        "3. 如果近期常用英雄集中，点评英雄池特点"
     )
     parameters: dict = Field(
         default_factory=lambda: {

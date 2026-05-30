@@ -10,6 +10,10 @@ class DotaMyProfileTool(FunctionTool[AstrAgentContext]):
         "查询当前用户自己绑定的 Dota2 账号资料、段位和近期战绩。"
         "当用户说「我的战绩」「我的天梯分」「我最近打得怎么样」「查一下我的dota」时调用。"
         "注意：此工具仅在用户已绑定 Steam ID 时有效。"
+        "返回数据后，请根据以下要点为用户生成简洁分析：\n"
+        "1. 根据胜率和 KDA 评价玩家近期状态（上升/稳定/下滑）\n"
+        "2. 指出表现突出或需改进的方面\n"
+        "3. 如果近期常用英雄集中，点评英雄池特点"
     )
     parameters: dict = Field(
         default_factory=lambda: {

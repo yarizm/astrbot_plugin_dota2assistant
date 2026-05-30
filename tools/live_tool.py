@@ -9,6 +9,9 @@ class DotaLiveTool(FunctionTool[AstrAgentContext]):
     description: str = (
         "查看当前正在进行的 Dota2 比赛，包括比分、进行时间、观战人数。"
         "当用户想看正在进行的比赛、当前有哪些比赛时调用。"
+        "返回数据后，请根据以下要点为用户生成简洁分析：\n"
+        "1. 如果有高 MMR 或职业选手的比赛，重点提及\n"
+        "2. 指出正在进行的精彩对决"
     )
     parameters: dict = Field(
         default_factory=lambda: {

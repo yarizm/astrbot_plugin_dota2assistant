@@ -9,6 +9,10 @@ class DotaHeroTool(FunctionTool[AstrAgentContext]):
     description: str = (
         "查询 Dota2 英雄属性、技能数据、天梯胜率和职业选取率。"
         "当用户想了解某个英雄时调用，例如英雄属性、胜率、定位。"
+        "返回数据后，请根据以下要点为用户生成简洁分析：\n"
+        "1. 根据属性成长分析该英雄的核心定位（前期/中期/后期强势）\n"
+        "2. 结合天梯胜率和职业数据点评当前版本强度\n"
+        "3. 推荐适合的打法思路（1-2 句话）"
     )
     parameters: dict = Field(
         default_factory=lambda: {
@@ -78,6 +82,9 @@ class DotaHeroListTool(FunctionTool[AstrAgentContext]):
     description: str = (
         "列出 Dota2 英雄，可按属性或定位筛选。"
         "当用户想看英雄列表、某个属性的英雄、某个定位的英雄时调用。"
+        "返回数据后，请根据以下要点为用户生成简洁分析：\n"
+        "1. 如果有筛选条件，简要说明筛选结果的特点\n"
+        "2. 如果用户问「推荐英雄」，根据列表推荐 2-3 个适合当前版本的英雄"
     )
     parameters: dict = Field(
         default_factory=lambda: {

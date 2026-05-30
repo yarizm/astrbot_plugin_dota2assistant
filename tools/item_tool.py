@@ -9,6 +9,10 @@ class DotaItemTool(FunctionTool[AstrAgentContext]):
     description: str = (
         "查询 Dota2 物品价格、效果、合成配方。"
         "当用户想了解某个物品时调用，例如物品价格、效果、合成路线。"
+        "返回数据后，请根据以下要点为用户生成简洁分析：\n"
+        "1. 简要说明该物品的核心作用\n"
+        "2. 推荐适合什么类型的英雄/什么局势出\n"
+        "3. 如果是合成件，说明合成路线的性价比"
     )
     parameters: dict = Field(
         default_factory=lambda: {
