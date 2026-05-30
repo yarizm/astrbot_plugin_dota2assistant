@@ -1,11 +1,17 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
-from compat import AstrMessageEvent, Context, Star, filter, logger
-from core.opendota import OpenDotaClient
-from core.store import DotaStore
+# 确保插件目录在 sys.path 中（AstrBot 运行时加载插件需要）
+_plugin_dir = str(Path(__file__).parent)
+if _plugin_dir not in sys.path:
+    sys.path.insert(0, _plugin_dir)
+
+from compat import AstrMessageEvent, Context, Star, filter, logger  # noqa: E402
+from core.opendota import OpenDotaClient  # noqa: E402
+from core.store import DotaStore  # noqa: E402
 
 _ASSETS_DIR = Path(__file__).parent / "assets"
 
