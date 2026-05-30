@@ -42,15 +42,26 @@ Dota2 数据查询插件，支持自然语言触发，通过 LLM 工具自动调
 | `enable_fallback_commands` | 是否启用 `/dota` 命令 | `true` |
 | `request_timeout` | API 请求超时（秒） | `15` |
 | `cache_ttl_seconds` | 数据缓存时间（秒） | `86400` |
+| `steam_api_key` | Steam API Key（可选，用于获取比赛数据） | 空 |
+
+### Steam API Key（可选）
+
+如果 OpenDota 无法获取某些玩家的比赛数据，可以配置 Steam API Key 作为备选数据源：
+
+1. 访问 https://steamcommunity.com/dev/apikey 申请 API Key
+2. 在插件管理页面配置 `steam_api_key`
+3. 当 OpenDota 返回空数据时，会自动切换到 Valve API
 
 ## 数据源
 
 | API | 说明 | 链接 |
 |-----|------|------|
 | OpenDota API | Dota2 数据查询（玩家、英雄、物品、比赛、实时、职业赛事） | [文档](https://docs.opendota.com/) / [仓库](https://github.com/odota/core) |
-| Valve Steam Web API | Steam ID 解析（通过 OpenDota 代理，无需单独申请 Key） | [文档](https://developer.valvesoftware.com/wiki/Steam_Web_API) |
+| Valve Steam Web API | 备选数据源，当 OpenDota 返回空数据时自动切换 | [文档](https://developer.valvesoftware.com/wiki/Steam_Web_API) |
 
-本插件通过 OpenDota API 获取数据，无需申请 API Key。感谢 OpenDota 项目的开源贡献。
+本插件默认使用 OpenDota API 获取数据，无需申请 API Key。如果需要获取比赛数据（当 OpenDota 返回空时），可以配置 Steam API Key 作为备选数据源。
+
+感谢 OpenDota 项目的开源贡献。
 
 ## 开发
 
