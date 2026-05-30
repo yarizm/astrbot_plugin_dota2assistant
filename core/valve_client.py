@@ -103,12 +103,10 @@ class ValveClient:
 
         recent_matches = []
         for match in matches:
-            # 找到当前玩家的 player_slot
-            player_slot = 0
+            # 找到当前玩家的 hero_id
             hero_id = 0
             for player in match.get("players", []):
                 if player.get("account_id") == account_id:
-                    player_slot = player.get("player_slot", 0)
                     hero_id = player.get("hero_id", 0)
                     break
 
@@ -197,17 +195,10 @@ class ValveClient:
     # ──────────────────────────────────────────────
 
     async def _get_hero_map(self) -> dict[int, str]:
-        """获取英雄 ID 到名称的映射（从 OpenDota 缓存）。"""
-        # 尝试从 OpenDota 获取英雄映射
-        try:
-            from core.opendota import OpenDotaClient
-            # 这里会复用 OpenDota 的英雄数据缓存
-            # 如果 OpenDota 不可用，返回空映射
-            pass
-        except Exception:
-            pass
+        """获取英雄 ID 到名称的映射。
 
-        # 返回空映射，让调用方处理
+        注意：当前返回空映射，调用方需要自行处理英雄名称。
+        """
         return {}
 
     async def _get(
