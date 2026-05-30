@@ -1,0 +1,22 @@
+{
+  "default_language": {
+    "description": "英雄/物品名称默认语言（en=英文, cn=中文）",
+    "type": "string",
+    "default": "cn"
+  },
+  "enable_fallback_commands": {
+    "description": "是否启用 /dota 等兜底命令（关闭后仅通过自然语言触发）",
+    "type": "bool",
+    "default": true
+  },
+  "request_timeout": {
+    "description": "API 请求超时时间（秒）",
+    "type": "int",
+    "default": 15
+  },
+  "cache_ttl_seconds": {
+    "description": "英雄/物品数据缓存时间（秒），默认 24 小时",
+    "type": "int",
+    "default": 86400
+  }
+}
