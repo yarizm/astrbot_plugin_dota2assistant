@@ -40,8 +40,9 @@ BASE_URL = "https://api.opendota.com/api"
 
 
 class OpenDotaClient:
-    def __init__(self, timeout: int = 15):
+    def __init__(self, timeout: int = 15, valve_client: Any | None = None):
         self.timeout = aiohttp.ClientTimeout(total=timeout)
+        self.valve_client = valve_client
 
     # --- Player ---
 
@@ -90,33 +91,39 @@ class OpenDotaClient:
 
     async def get_player_recent_matches(self, account_id: int, limit: int = 10) -> list[RecentMatch]:
         data = await self._get(f"/players/{account_id}/recentMatches", context="近期比赛")
-        if not isinstance(data, list):
-            return []
-        # Build hero lookup
-        heroes = await self.get_heroes()
-        hero_map = {h.id: h.localized_name for h in heroes}
+        if isinstance(data, list) and data:
+            # OpenDota 返回数据，使用 OpenDota 数据
+            heroes = await self.get_heroes()
+            hero_map = {h.id: h.localized_name for h in heroes}
 
-        matches = []
-        for item in data[:limit]:
-            hero_id = item.get("hero_id", 0)
-            matches.append(RecentMatch(
-                match_id=item.get("match_id", 0),
-                hero_id=hero_id,
-                hero_name=hero_map.get(hero_id, f"Hero#{hero_id}"),
-                kills=item.get("kills", 0),
-                deaths=item.get("deaths", 0),
-                assists=item.get("assists", 0),
-                duration_seconds=item.get("duration", 0),
-                win=_is_radiant_win(item),
-                game_mode=item.get("game_mode", 0),
-                start_time=item.get("start_time", 0),
-                gpm=item.get("gold_per_min", 0),
-                xpm=item.get("xp_per_min", 0),
-                hero_damage=item.get("hero_damage", 0),
-                tower_damage=item.get("tower_damage", 0),
-                last_hits=item.get("last_hits", 0),
-            ))
-        return matches
+            matches = []
+            for item in data[:limit]:
+                hero_id = item.get("hero_id", 0)
+                matches.append(RecentMatch(
+                    match_id=item.get("match_id", 0),
+                    hero_id=hero_id,
+                    hero_name=hero_map.get(hero_id, f"Hero#{hero_id}"),
+                    kills=item.get("kills", 0),
+                    deaths=item.get("deaths", 0),
+                    assists=item.get("assists", 0),
+                    duration_seconds=item.get("duration", 0),
+                    win=_is_radiant_win(item),
+                    game_mode=item.get("game_mode", 0),
+                    start_time=item.get("start_time", 0),
+                    gpm=item.get("gold_per_min", 0),
+                    xpm=item.get("xp_per_min", 0),
+                    hero_damage=item.get("hero_damage", 0),
+                    tower_damage=item.get("tower_damage", 0),
+                    last_hits=item.get("last_hits", 0),
+                ))
+            return matches
+
+        # OpenDota 返回空数据，尝试 Valve API
+        if self.valve_client:
+            logger.info("OpenDota 返回空数据，尝试 Valve API...")
+            return await self.valve_client.get_match_history(account_id, limit)
+
+        return []
 
     # --- Heroes ---
 
@@ -175,57 +182,63 @@ class OpenDotaClient:
 
     async def get_match_detail(self, match_id: int) -> MatchDetail | None:
         data = await self._get(f"/matches/{match_id}", context="比赛详情")
-        if not isinstance(data, dict):
-            return None
+        if isinstance(data, dict):
+            # OpenDota 返回数据，使用 OpenDota 数据
+            heroes = await self.get_heroes()
+            hero_map = {h.id: h.localized_name for h in heroes}
 
-        heroes = await self.get_heroes()
-        hero_map = {h.id: h.localized_name for h in heroes}
+            players = []
+            for p in data.get("players", []):
+                hero_id = p.get("hero_id", 0)
+                items = []
+                for i in range(6):
+                    item_key = f"item_{i}"
+                    item_val = p.get(item_key)
+                    if item_val:
+                        items.append(str(item_val))
 
-        players = []
-        for p in data.get("players", []):
-            hero_id = p.get("hero_id", 0)
-            items = []
-            for i in range(6):
-                item_key = f"item_{i}"
-                item_val = p.get(item_key)
-                if item_val:
-                    items.append(str(item_val))
+                players.append(MatchPlayer(
+                    account_id=p.get("account_id") or p.get("player_slot", 0),
+                    persona_name=p.get("personaname") or "",
+                    hero_id=hero_id,
+                    hero_name=hero_map.get(hero_id, f"Hero#{hero_id}"),
+                    kills=p.get("kills", 0),
+                    deaths=p.get("deaths", 0),
+                    assists=p.get("assists", 0),
+                    gpm=p.get("gold_per_min", 0),
+                    xpm=p.get("xp_per_min", 0),
+                    hero_damage=p.get("hero_damage", 0),
+                    tower_damage=p.get("tower_damage", 0),
+                    hero_healing=p.get("hero_healing", 0),
+                    last_hits=p.get("last_hits", 0),
+                    denies=p.get("denies", 0),
+                    net_worth=p.get("net_worth", 0),
+                    level=p.get("level", 0),
+                    items=items,
+                    is_radiant=p.get("isRadiant", False),
+                    win=p.get("win", False),
+                ))
 
-            players.append(MatchPlayer(
-                account_id=p.get("account_id") or p.get("player_slot", 0),
-                persona_name=p.get("personaname") or "",
-                hero_id=hero_id,
-                hero_name=hero_map.get(hero_id, f"Hero#{hero_id}"),
-                kills=p.get("kills", 0),
-                deaths=p.get("deaths", 0),
-                assists=p.get("assists", 0),
-                gpm=p.get("gold_per_min", 0),
-                xpm=p.get("xp_per_min", 0),
-                hero_damage=p.get("hero_damage", 0),
-                tower_damage=p.get("tower_damage", 0),
-                hero_healing=p.get("hero_healing", 0),
-                last_hits=p.get("last_hits", 0),
-                denies=p.get("denies", 0),
-                net_worth=p.get("net_worth", 0),
-                level=p.get("level", 0),
-                items=items,
-                is_radiant=p.get("isRadiant", False),
-                win=p.get("win", False),
-            ))
+            return MatchDetail(
+                match_id=match_id,
+                duration_seconds=data.get("duration", 0),
+                radiant_win=data.get("radiant_win", False),
+                radiant_score=data.get("radiant_score", 0),
+                dire_score=data.get("dire_score", 0),
+                game_mode=data.get("game_mode", 0),
+                start_time=data.get("start_time", 0),
+                patch=data.get("patch", ""),
+                region=str(data.get("region", "")),
+                players=players,
+                picks_bans=data.get("picks_bans") or [],
+            )
 
-        return MatchDetail(
-            match_id=match_id,
-            duration_seconds=data.get("duration", 0),
-            radiant_win=data.get("radiant_win", False),
-            radiant_score=data.get("radiant_score", 0),
-            dire_score=data.get("dire_score", 0),
-            game_mode=data.get("game_mode", 0),
-            start_time=data.get("start_time", 0),
-            patch=data.get("patch", ""),
-            region=str(data.get("region", "")),
-            players=players,
-            picks_bans=data.get("picks_bans") or [],
-        )
+        # OpenDota 返回空数据，尝试 Valve API
+        if self.valve_client:
+            logger.info("OpenDota 返回空数据，尝试 Valve API...")
+            return await self.valve_client.get_match_detail(match_id)
+
+        return None
 
     # --- Live ---
 

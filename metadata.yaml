@@ -18,3 +18,24 @@ support_platforms:
 astrbot_version: ">=4.16,<5"
 requirements:
   - aiohttp
+config:
+  default_language:
+    description: 英雄/物品名称默认语言
+    type: string
+    default: "cn"
+  enable_fallback_commands:
+    description: 是否启用 /dota 命令
+    type: boolean
+    default: true
+  request_timeout:
+    description: API 请求超时（秒）
+    type: integer
+    default: 15
+  cache_ttl_seconds:
+    description: 数据缓存时间（秒）
+    type: integer
+    default: 86400
+  steam_api_key:
+    description: Steam API Key（可选，用于获取比赛数据，申请地址：https://steamcommunity.com/dev/apikey）
+    type: string
+    default: ""

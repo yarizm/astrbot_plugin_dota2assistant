@@ -23,6 +23,7 @@ class Dota2AssistantPlugin(Star):
         plugin_config = config or {}
         self.enable_fallback = plugin_config.get("enable_fallback_commands", True)
         timeout = plugin_config.get("request_timeout", 15)
+        steam_api_key = plugin_config.get("steam_api_key", "")
 
         # 数据目录
         try:
@@ -31,7 +32,14 @@ class Dota2AssistantPlugin(Star):
         except Exception:
             data_dir = Path(__file__).parent / "data"
 
-        self.client = OpenDotaClient(timeout=timeout)
+        # 创建 Valve 客户端（如果配置了 API Key）
+        valve_client = None
+        if steam_api_key:
+            from core.valve_client import ValveClient
+            valve_client = ValveClient(api_key=steam_api_key, timeout=timeout)
+            logger.info("Valve API 客户端已启用。")
+
+        self.client = OpenDotaClient(timeout=timeout, valve_client=valve_client)
         self.store = DotaStore(data_dir / "dota2.db")
         self.hero_map = _load_json_map(_ASSETS_DIR / "heroes.json")
         self.item_name_map = _load_json_map(_ASSETS_DIR / "items.json")
